@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "moduleResolution": "node",
+        "module": "esnext",
+        "target": "esnext",
+        "jsx": "react-jsx",
+        "outDir": "tsc_build",
+        "baseUrl": "./",
+        "paths": {},
+        "allowSyntheticDefaultImports": true
+    },
+    "include": [
+        "src"
+    ]
+}
