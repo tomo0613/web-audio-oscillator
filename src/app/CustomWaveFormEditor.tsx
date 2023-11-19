@@ -1,73 +1,130 @@
 import { Box, Stack, TextField } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useReducer } from "react";
+
+const initialState = {
+    componentCount: 2,
+    real: [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    imag: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+};
+
+enum ActionType {
+    setComponentCount = 'setComponentCount',
+    setRealComponent = 'setRealComponent',
+    setImagComponent = 'setImagComponent',
+}
+  
+interface SetComponentCountAction {
+    type: ActionType.setComponentCount;
+    payload: { value: number };
+}
+ 
+interface SetRealComponentAction {
+    type: ActionType.setRealComponent;
+    payload: { value: number, index: number };
+}
+
+interface SetImagComponentAction {
+    type: ActionType.setImagComponent;
+    payload: { value: number, index: number };
+}
+
+type State = typeof initialState;
+
+type Action = SetComponentCountAction | SetRealComponentAction | SetImagComponentAction;
+
+function updateArrayValue<T = unknown>(array: T[], index: number, value: T) {
+    const res = [...array];
+    res[index] = value;
+
+    return res;
+}
+
+function reducer(state: State, action: Action): State {
+    const { value } = action.payload;
+
+    switch (action.type) {
+        case ActionType.setComponentCount:
+            return {
+                ...state,
+                componentCount: value,
+            };
+        case ActionType.setRealComponent:
+            return {
+                ...state,
+                real: updateArrayValue(state.real, action.payload.index, value),
+            };
+        case ActionType.setImagComponent:
+            return {
+                ...state,
+                imag: updateArrayValue(state.imag, action.payload.index, value),
+            };
+    };
+}
 
 interface Props {
     onChange: (real: Float32Array, imag: Float32Array) => void;
+    disabled?: boolean;
 }
 
-export const CustomWaveFormEditor: React.FC<Props> = ({ onChange }) => {
-    const [componentCount, setComponentCount] = useState(2);
-    // const [components, setComponents] = useState([[0, 1], [0, 0]]);
-    const [realValues, setRealValues] = useState([0, 1]);
-    const [imagValues, setImagValues] = useState([0, 0]);
+export const CustomWaveFormEditor: React.FC<Props> = ({ onChange, disabled }) => {
+    const [state, dispatch] = useReducer(reducer, initialState);
 
-    useEffect(() => {
+    useEffect(() => {        
         onChange(
-            new Float32Array(realValues), // ToDo
-            new Float32Array(imagValues),
+            new Float32Array(state.real.slice(0, state.componentCount)),
+            new Float32Array(state.imag.slice(0, state.componentCount)),
         );
-    }, [componentCount, realValues, imagValues]);
+    }, [state]);
 
     function handleComponentCountChange(e: React.ChangeEvent<HTMLInputElement>) {
         const value = Number(e.currentTarget.value);
 
-        setComponentCount(value);
+        dispatch({ type: ActionType.setComponentCount, payload: { value } });
     }
-
 
     function handleComponentChange(e: React.ChangeEvent<HTMLInputElement>) {
         const value = Number(e.currentTarget.value);
-        const realIndex = Number(e.currentTarget.dataset.real_index);
-        const imagIndex = Number(e.currentTarget.dataset.imag_index);
+        const index = Number(e.currentTarget.dataset.index);
+        const type = e.currentTarget.dataset.type === "real"
+            ? ActionType.setRealComponent
+            : ActionType.setImagComponent;
 
-        if (Number.isNaN(imagIndex)) {
-            const real = [...realValues];
-            real[realIndex] = value;
-
-            setRealValues(real);
-        } else {
-            const imag = [...imagValues];
-            imag[imagIndex] = value;
-
-            setImagValues(imag);
-        }
+        dispatch({ type, payload: { value, index } });
     }
 
     return (
         <Box>
-            <TextField type='number' value={componentCount} onChange={handleComponentCountChange} />
-            <Stack direction="row">
-                {Array.from({ length: componentCount }).map((_, realIndex) => (
-                    <TextField 
-                        key={`real-${realIndex}`}
-                        type='number' 
-                        value={realValues[realIndex]} 
-                        data-real_index={realIndex}
-                        onChange={handleComponentChange} 
-                    />
-                ))}
-            </Stack>
-            <Stack direction="row">
-                {Array.from({ length: componentCount }).map((_, imagIndex) => (
-                    <TextField
-                        key={`imag-${imagIndex}`}
-                        type='number' 
-                        value={imagValues[imagIndex]} 
-                        data-imag_index={imagIndex}
-                        onChange={handleComponentChange} 
-                    />
-                ))}
-            </Stack>
+            <TextField
+                type='number'
+                label="Custom wave component count"
+                inputProps={{
+                    min: 2,
+                    max: 12,
+                }}
+                value={state.componentCount}
+                onChange={handleComponentCountChange}
+                disabled={disabled}
+            />
+            {(["real", "imag"] as const).map((type) => (
+                <Stack key={type} direction="row" spacing={1} my={1}>
+                    {Array.from({ length: state.componentCount }).map((_, index) => (
+                        <TextField 
+                            key={`${type}-${index}`}
+                            type='number' 
+                            label={`${type} ${index}`}
+                            inputProps={{
+                                min: 0,
+                                step: 0.1,
+                                ["data-type"]: type,
+                                ["data-index"]: index,
+                            }}
+                            value={state[type][index]} 
+                            onChange={handleComponentChange}
+                            disabled={disabled}
+                        />
+                    ))}
+                </Stack>
+            ))}
         </Box>
     );
 }

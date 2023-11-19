@@ -65,23 +65,35 @@ export const App = () => {
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
-            <Stack spacing={2} direction="row" sx={{ mb: 1 }} alignItems="center">
+            <Stack spacing={2} direction="row" sx={{ mb: 4 }} alignItems="center">
                 <VolumeDown />
                 <Slider min={0} max={1} step={0.001} value={volume} onChange={handleVolumeChange} />
                 <VolumeUp />
             </Stack>
-            <TextField select value={waveForm} onChange={handleWaveFormChange}>
-                {oscillatorTypes.map((oscillatorType) => (
-                    <MenuItem key={oscillatorType} value={oscillatorType}>
-                        {oscillatorType}
-                    </MenuItem>
-                ))}
-            </TextField>
-            <TextField type='number' value={frequency} onChange={handleFrequencyChange} />
-            <IconButton onMouseDown={startOscillator} onMouseUp={stopOscillator}>
-                <MusicNote />
-            </IconButton>
-            <CustomWaveFormEditor onChange={audioController.setCustomWave} />
+            <Stack spacing={2} direction="row" sx={{ mb: 4 }} alignItems="center">
+                <TextField 
+                    select
+                    label="Wave form"
+                    value={waveForm}
+                    onChange={handleWaveFormChange}
+                >
+                    {oscillatorTypes.map((oscillatorType) => (
+                        <MenuItem key={oscillatorType} value={oscillatorType}>
+                            {oscillatorType}
+                        </MenuItem>
+                    ))}
+                </TextField>
+                <TextField 
+                    type='number'
+                    label="Frequency"
+                    value={frequency}
+                    onChange={handleFrequencyChange}
+                />
+                <IconButton onMouseDown={startOscillator} onMouseUp={stopOscillator}>
+                    <MusicNote />
+                </IconButton>
+            </Stack>
+            <CustomWaveFormEditor onChange={audioController.setCustomWave} disabled={waveForm !== "custom"} />
             <AudioAnalyserDisplay />
         </ThemeProvider>
     )
