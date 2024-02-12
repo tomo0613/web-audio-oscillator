@@ -2,8 +2,7 @@
 name: CD workflow
 
 on:
-  push:
-    branches: [$default-branch]
+  push
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
