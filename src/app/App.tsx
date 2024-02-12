@@ -89,7 +89,12 @@ export const App = () => {
                     value={frequency}
                     onChange={handleFrequencyChange}
                 />
-                <IconButton onMouseDown={startOscillator} onMouseUp={stopOscillator}>
+                <IconButton 
+                    onMouseDown={startOscillator}
+                    onMouseUp={stopOscillator}
+                    onTouchStart={startOscillator}
+                    onTouchCancel={stopOscillator}
+                >
                     <MusicNote />
                 </IconButton>
             </Stack>
